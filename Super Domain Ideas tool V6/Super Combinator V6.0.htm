@@ -1395,17 +1395,42 @@
                                         class="w-6 h-6 rounded bg-accent-100 text-accent-600 dark:bg-accent-900 dark:text-accent-300 text-xs flex items-center justify-center">2</span>
                                     Bulk Keywords
                                 </h3>
-                                <span id="kwCount"
-                                    class="text-xs font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500">0</span>
+                                <div class="flex items-center gap-2">
+                                    <span id="dupeCount"
+                                        class="text-xs font-mono bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded hidden">0
+                                        dupes</span>
+                                    <span id="kwCount"
+                                        class="text-xs font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500">0</span>
+                                </div>
                             </div>
 
                             <button id="insertPackBtn"
                                 class="w-full mb-3 bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 py-2 rounded-lg text-xs font-bold transition-colors border border-brand-200 dark:border-brand-800/50">
                                 + Insert Category Pack
                             </button>
-                            <div id="insertedList" class="flex flex-wrap gap-2 mb-2 min-h-[4px]"></div>
+                            <!-- Inserted Packs Dropdown -->
+                            <div id="insertedPacksDropdown" class="relative mb-3 hidden group/packs">
+                                <div id="insertedPacksToggle"
+                                    class="w-full flex items-center justify-between px-3 py-2 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800/50 rounded-lg text-xs font-bold text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/30 transition-colors cursor-pointer">
+                                    <span class="flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M20 7l-8 4-8-4m16 0v10l-8 4m8-14L12 3 4 7m8 4v10" />
+                                        </svg>
+                                        <span id="insertedPacksLabel">0 Packs Inserted</span>
+                                    </span>
+                                    <svg class="w-4 h-4 transition-transform group-hover/packs:rotate-180" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                                <div id="insertedPacksList"
+                                    class="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden max-h-52 overflow-y-auto z-40 opacity-0 invisible group-hover/packs:opacity-100 group-hover/packs:visible transition-all duration-150">
+                                </div>
+                            </div>
 
-                            <textarea id="bulkKw"
+                            <textarea id="bulkKw" oninput="updateStats()"
                                 class="w-full h-40 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-500 outline-none resize-none font-mono"
                                 placeholder="Paste list..."></textarea>
 
@@ -1922,7 +1947,8 @@
 
                 <!-- Winners Content (hidden until authenticated) -->
                 <div id="winnersContent" class="hidden">
-                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4 sticky top-16 z-30 bg-white/95 dark:bg-dark-bg/95 backdrop-blur-md py-4 -mx-4 px-4"
+                        style="top: 64px;">
                         <div>
                             <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Winners</h1>
                             <p class="text-slate-500 dark:text-slate-400">Track domains you want to buy, own, or have
@@ -1960,11 +1986,10 @@
                         </div>
                     </div>
 
-                    <div
-                        class="glass-panel rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div class="glass-panel rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
                         <!-- Filters -->
-                        <div
-                            class="p-4 border-b border-slate-100 dark:border-slate-700 flex flex-wrap gap-4 items-center">
+                        <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex flex-wrap gap-4 items-center sticky z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-t-2xl"
+                            style="top: 130px;">
                             <input type="text" id="winSearch" placeholder="Search domains..."
                                 class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 text-sm w-64 focus:ring-2 focus:ring-accent-500 outline-none">
                             <div class="flex gap-2" id="winStatusFilters">
@@ -1988,12 +2013,22 @@
                                 class="ml-auto text-xs font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-500">0
                                 domains</span>
                         </div>
+                        <!-- TLD Filters -->
+                        <div id="winTldFilterBar"
+                            class="px-4 py-2 border-b border-slate-100 dark:border-slate-700 hidden sticky z-[19] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md"
+                            style="top: 185px;">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TLD</span>
+                                <div class="flex gap-1.5 flex-wrap" id="winTldChips"></div>
+                            </div>
+                        </div>
 
                         <!-- Table -->
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead
-                                    class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase">
+                                    class="bg-slate-50 dark:bg-slate-800/95 text-xs font-bold text-slate-500 uppercase sticky z-10"
+                                    style="top: 193px;">
                                     <tr>
                                         <th class="px-6 py-4">Domain</th>
                                         <th class="px-6 py-4">Category</th>
@@ -2858,9 +2893,9 @@
             $('bulkConfirm').onclick = bulkAddToEditor;
 
             // Bulk Keywords Area
-            $('dedupBtn').onclick = () => { processBulk(w => [...new Set(w)]); toast('Deduplicated'); };
+            $('dedupBtn').onclick = () => { processBulk(w => w.filter(x => x.length > 1)); toast('Cleaned'); };
             $('sortKwBtn').onclick = () => { processBulk(w => w.sort()); toast('Sorted'); };
-            $('cleanBtn').onclick = () => { processBulk(w => w.filter(x => x.length > 1)); toast('Cleaned'); };
+            $('cleanBtn').onclick = () => { processBulk(w => [...new Set(w)]); toast('Deduplicated'); };
             $('removeNumsKwBtn').onclick = () => { processBulk(w => w.map(x => x.replace(/\d/g, '')).filter(x => x)); toast('Numbers removed'); };
             $('insertPackBtn').onclick = () => { renderCatPicker(); openModal('catModal'); };
             $('pickMultBtn').onclick = () => { renderMultPicker(); openModal('multModal'); };
@@ -3018,6 +3053,8 @@
         function clearInputs() {
             $('mainKw').value = '';
             $('bulkKw').value = '';
+            S.insertedPacks = [];
+            renderInsertedPacks();
             updateStats();
             if ($('clear-res-check').checked) {
                 S.domains = [];
@@ -3902,6 +3939,7 @@
         // ═══════════════════════════════════════════
         let winnerEditIdx = null; // null = add new, number = editing index
         let winnerStatusFilter = 'all';
+        let winnerTldFilter = 'all';
 
         function toggleWinner(d) {
             const idx = S.winners.findIndex(w => w.d === d);
@@ -3929,14 +3967,38 @@
             const tbody = $('winnersTable');
             if (!tbody) return;
 
-            // Filter by search and status
+            // Filter by search, status, and TLD
             let list = S.winners.filter(w => {
                 const matchQ = w.d.toLowerCase().includes(q) ||
                     (w.category || '').toLowerCase().includes(q) ||
                     (w.notes || '').toLowerCase().includes(q);
                 const matchStatus = winnerStatusFilter === 'all' || w.status === winnerStatusFilter;
-                return matchQ && matchStatus;
+                const tld = w.d.substring(w.d.lastIndexOf('.'));
+                const matchTld = winnerTldFilter === 'all' || tld === winnerTldFilter;
+                return matchQ && matchStatus && matchTld;
             });
+
+            // Build TLD filter chips dynamically
+            const tldCounts = {};
+            S.winners.forEach(w => {
+                const tld = w.d.substring(w.d.lastIndexOf('.'));
+                if (tld) tldCounts[tld] = (tldCounts[tld] || 0) + 1;
+            });
+            const tldBar = $('winTldFilterBar');
+            const tldChips = $('winTldChips');
+            const uniqueTlds = Object.keys(tldCounts).sort();
+            if (uniqueTlds.length > 1) {
+                tldBar.classList.remove('hidden');
+                const activeClass = 'bg-slate-900 text-white dark:bg-white dark:text-slate-900';
+                const inactiveClass = 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-200';
+                tldChips.innerHTML = `<button class="tld-filter text-[11px] px-2.5 py-1 rounded-full font-semibold transition-colors ${winnerTldFilter === 'all' ? activeClass : inactiveClass}" data-tld="all">All</button>` +
+                    uniqueTlds.map(tld => `<button class="tld-filter text-[11px] px-2.5 py-1 rounded-full font-semibold transition-colors ${winnerTldFilter === tld ? activeClass : inactiveClass}" data-tld="${tld}">${tld} <span class="opacity-60">(${tldCounts[tld]})</span></button>`).join('');
+                tldChips.querySelectorAll('.tld-filter').forEach(btn => {
+                    btn.onclick = () => { winnerTldFilter = btn.dataset.tld; renderWinners(); };
+                });
+            } else {
+                tldBar.classList.add('hidden');
+            }
 
             // Update count badge
             const badge = $('winCountBadge');
@@ -4277,6 +4339,23 @@
         function updateStats() {
             const words = $('bulkKw').value.split('\n').filter(s => s.trim());
             $('kwCount').innerText = words.length;
+
+            // Calculate and display duplicate count
+            const seen = new Set();
+            let dupeCount = 0;
+            words.forEach(w => {
+                const lower = w.trim().toLowerCase();
+                if (seen.has(lower)) dupeCount++;
+                else seen.add(lower);
+            });
+            const dupeEl = $('dupeCount');
+            if (dupeCount > 0) {
+                dupeEl.textContent = dupeCount + ' dupe' + (dupeCount !== 1 ? 's' : '');
+                dupeEl.classList.remove('hidden');
+            } else {
+                dupeEl.classList.add('hidden');
+            }
+
             $('hdrPacks').innerText = S.packs.length;
             $('packCountBadge').innerText = S.packs.length;
             let total = 0; S.packs.forEach(p => total += p.words.length);
@@ -4299,11 +4378,57 @@
             if (mode === 'replace') $('bulkKw').value = txt;
             else $('bulkKw').value += '\n' + txt;
 
-            // Add tag to inserted list
-            $('insertedList').innerHTML += `<span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-brand-100 text-brand-700 text-xs font-bold"><span onclick="this.parentElement.remove()">×</span> ${p.name}</span>`;
+            // Track inserted pack
+            S.insertedPacks.push({ id: p.id, name: p.name, wordCount: p.words.length, words: [...p.words] });
+            renderInsertedPacks();
 
             closeModal('catModal');
             updateStats();
+        }
+
+        function removeInsertedPack(index) {
+            const pack = S.insertedPacks[index];
+            if (!pack) return;
+
+            // Remove this pack's keywords from textarea
+            const currentWords = $('bulkKw').value.split('\n').map(s => s.trim()).filter(s => s);
+            const packWords = new Set(pack.words.map(w => w.toLowerCase()));
+            const remaining = currentWords.filter(w => !packWords.delete(w.toLowerCase()));
+            $('bulkKw').value = remaining.join('\n');
+
+            // Remove from tracking
+            S.insertedPacks.splice(index, 1);
+            renderInsertedPacks();
+            updateStats();
+            toast(`Removed "${pack.name}" and its keywords`);
+        }
+
+        function renderInsertedPacks() {
+            const dropdown = $('insertedPacksDropdown');
+            const label = $('insertedPacksLabel');
+            const list = $('insertedPacksList');
+
+            if (S.insertedPacks.length === 0) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            dropdown.classList.remove('hidden');
+            const totalWords = S.insertedPacks.reduce((s, p) => s + p.wordCount, 0);
+            label.textContent = `${S.insertedPacks.length} Pack${S.insertedPacks.length !== 1 ? 's' : ''} Inserted · ${totalWords} words`;
+
+            list.innerHTML = S.insertedPacks.map((p, i) => `
+                <div class="flex items-center justify-between px-3 py-2 border-b border-slate-100 dark:border-slate-700 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-xs">📦</span>
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">${p.name}</span>
+                        <span class="text-[10px] font-mono bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded flex-shrink-0">${p.wordCount}</span>
+                    </div>
+                    <button onclick="removeInsertedPack(${i})" class="text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded p-1 transition-colors flex-shrink-0" title="Remove pack">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                </div>
+            `).join('');
         }
 
         function renderMultPicker() {
